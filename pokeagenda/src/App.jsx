@@ -1,32 +1,33 @@
 import './App.css';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Layout from './components/Layout.jsx';
 import Header from './components/Header.jsx';
 import SearchForm from './components/SearchForm.jsx';
 import PokemonGrid from './components/PokemonGrid.jsx';
-
-const MOCK_POKEMONS = [
-  {
-    id: 25,
-    name: 'pikachu',
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png',
-    types: ['electric'],
-    weight: 6,
-    height: 0.4,
-  },
-  {
-    id: 1,
-    name: 'bulbasaur',
-    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png',
-    types: ['grass', 'poison'],
-    weight: 6.9,
-    height: 0.7,
-  },
-];
+import { fetchPokemonList } from './services/pokeapi.js';
 
 function App() {
   const [query, setQuery] = useState('');
-  const [pokemons, setPokemons] = useState(MOCK_POKEMONS);
+  const [pokemons, setPokemons] = useState([]);
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function loadPokemons() {
+      try {
+        setStatus('loading');
+        const data = await fetchPokemonList();
+        setPokemons(data);
+        setStatus('success');
+      } catch (error) {
+        setError(error.message);
+        setStatus('error');
+      }
+    }
+
+    loadPokemons();
+  }, []);
+
 
   const filteredPokemons = useMemo(() => {
     const trimmedQuery = query.trim().toLowerCase();
